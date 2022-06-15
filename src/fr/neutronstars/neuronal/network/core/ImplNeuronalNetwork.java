@@ -21,13 +21,13 @@ public class ImplNeuronalNetwork implements NeuronalNetwork {
     }
 
     private final int[] neuronalCount;
-    private final Matrix[] weightMatrices;
+    private final Matrix[] weightSynapse;
     private final Matrix[] lastForwardResult;
 
     private ImplNeuronalNetwork(int[] neuronalCount, Matrix[] weightMatrices)
     {
         this.neuronalCount = neuronalCount;
-        this.weightMatrices = weightMatrices;
+        this.weightSynapse = weightMatrices;
         this.lastForwardResult = new Matrix[neuronalCount.length - 2];
     }
 
@@ -35,7 +35,7 @@ public class ImplNeuronalNetwork implements NeuronalNetwork {
     {
         Matrix resultMatrix = matrix;
         int x = 0;
-        for (Matrix weighMatrix : this.weightMatrices) {
+        for (Matrix weighMatrix : this.weightSynapse) {
             resultMatrix = resultMatrix.dot(weighMatrix).sigmoid();
             if (x < this.lastForwardResult.length) {
                 this.lastForwardResult[x] = resultMatrix;
@@ -47,20 +47,20 @@ public class ImplNeuronalNetwork implements NeuronalNetwork {
 
     private void learn(Matrix input, Matrix realOutput, Matrix output) throws MatrixException
     {
-        Matrix[] delta = new Matrix[this.weightMatrices.length + 1];
+        Matrix[] delta = new Matrix[this.weightSynapse.length + 1];
         delta[delta.length - 1] = realOutput.subtract(output).multiply(output.reverseSigmoid());
 
         for (int x = delta.length - 2; x > 0; x--) {
-            delta[x] = delta[x + 1].dot(this.weightMatrices[x].flip())
+            delta[x] = delta[x + 1].dot(this.weightSynapse[x].flip())
                 .multiply(this.lastForwardResult[x - 1].reverseSigmoid());
         }
 
-        for (int x = 0; x < this.weightMatrices.length; x++) {
+        for (int x = 0; x < this.weightSynapse.length; x++) {
             if (x == 0) {
-                this.weightMatrices[x] = this.weightMatrices[x].addition(input.flip().dot(delta[x + 1]));
+                this.weightSynapse[x] = this.weightSynapse[x].addition(input.flip().dot(delta[x + 1]));
                 continue;
             }
-            this.weightMatrices[x] = this.weightMatrices[x]
+            this.weightSynapse[x] = this.weightSynapse[x]
                 .addition(this.lastForwardResult[x-1].flip().dot(delta[x + 1]));
         }
     }
